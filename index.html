@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru" data-lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Гефест · студия — работы</title>
+<meta name="description" content="Гефест — AI-студия: конструктор проектов, библиотека навыков и собственные продукты. Витрина работ.">
+<style>
+  :root{
+    --bg:#111317; --panel:#181b21; --fg:#eceef2; --muted:#9aa3b2; --line:#272b33;
+    --accent:#e0843f; --accent-weak:#3a2a1b; --ok:#4cc47d;
+    --maxw:1080px; --gut:16px;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f6f6f4; --panel:#fff; --fg:#1b1d22; --muted:#5b616e; --line:#e6e6ea;
+      --accent:#b5531f; --accent-weak:#fbe9df;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{overflow-x:clip}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:17px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
+  a{color:var(--accent);text-decoration:none}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  header{border-bottom:1px solid var(--line)}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+  .mark{width:30px;height:30px;border-radius:7px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:800}
+  .lang{display:flex;gap:2px;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--panel)}
+  .lang button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;padding:4px 10px;border-radius:999px;cursor:pointer}
+  .lang button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .hero{padding:64px 0 36px}
+  .hero h1{font-size:clamp(30px,5vw,46px);line-height:1.08;margin:0 0 .35em;letter-spacing:-.02em}
+  .hero p{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:52ch;margin:0}
+  h2{font-size:14px;text-transform:none;color:var(--muted);font-weight:600;margin:44px 0 16px;letter-spacing:.02em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+  .card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;transition:border-color .15s,transform .15s}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .card h3{margin:0 0 .3em;font-size:19px}
+  .card .d{color:var(--muted);font-size:15px;margin:0 0 .8em}
+  .tag{display:inline-block;font-size:12px;color:var(--accent);background:var(--accent-weak);padding:2px 9px;border-radius:999px}
+  .examples .card h3{font-size:16px}
+  footer{border-top:1px solid var(--line);margin-top:56px;padding:24px 0;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  [data-lang="ru"] .en,[data-lang="en"] .ru{display:none}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="brand"><span class="mark">Г</span><span><span class="ru">Гефест</span><span class="en">Hefest</span> · <span style="color:var(--muted);font-weight:500"><span class="ru">студия</span><span class="en">studio</span></span></span></div>
+  <div class="lang" role="group" aria-label="Language">
+    <button data-set="ru" aria-pressed="true">RU</button><button data-set="en" aria-pressed="false">EN</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1><span class="ru">Кузница AI-решений</span><span class="en">A forge for AI solutions</span></h1>
+    <p>
+      <span class="ru">Гефест — студия: конструктор проектов, библиотека навыков и собственные продукты. Ниже — наши работы и примеры.</span>
+      <span class="en">Hefest is a studio: a project constructor, a skills library and our own products. Below are our works and examples.</span>
+    </p>
+  </section>
+
+  <h2><span class="ru">Работы</span><span class="en">Works</span></h2>
+  <div class="grid">
+    <a class="card" href="https://workshop.hefest.ru">
+      <span class="tag"><span class="ru">обучение</span><span class="en">education</span></span>
+      <h3><span class="ru">Полиинструментальный цех</span><span class="en">Multi-Instrument Workshop</span></h3>
+      <p class="d"><span class="ru">Самоучитель для мультиинструменталиста и продюсера: бас, гитара, клавиши, продакшн.</span><span class="en">A self-study guide for the multi-instrumentalist and producer: bass, guitar, keys, production.</span></p>
+    </a>
+    <a class="card" href="https://arcade.hefest.ru">
+      <span class="tag"><span class="ru">игры</span><span class="en">games</span></span>
+      <h3><span class="ru">Зал ретро-игр</span><span class="en">Retro Arcade</span></h3>
+      <p class="d"><span class="ru">11 браузерных ремейков классических аркад и платформеров 1982–1997.</span><span class="en">11 browser remakes of classic arcades and platformers, 1982–1997.</span></p>
+    </a>
+    <a class="card" href="https://github.com/hefest-studio/tab-forge">
+      <span class="tag"><span class="ru">расширение</span><span class="en">extension</span></span>
+      <h3><span class="ru">Кузня вкладок</span><span class="en">Tab Forge</span></h3>
+      <p class="d"><span class="ru">Браузерное расширение: само раскладывает вкладки по темам и учится на ваших группах.</span><span class="en">A browser extension that auto-groups tabs by topic and learns from your groups.</span></p>
+    </a>
+  </div>
+
+  <h2><span class="ru">Примеры работ</span><span class="en">Examples</span></h2>
+  <div class="grid examples">
+    <a class="card" href="/examples/claude-code-desktop-i-web-sravnenie.html"><h3><span class="ru">Claude Code / Desktop / Web — сравнение</span><span class="en">Claude Code / Desktop / Web — comparison</span></h3></a>
+    <a class="card" href="/examples/staryi-biven-sony-xperia-1-viii.html"><h3><span class="ru">Обзор: Sony Xperia 1 VIII</span><span class="en">Review: Sony Xperia 1 VIII</span></h3></a>
+    <a class="card" href="/examples/motorola_razr_fold_XT2651-1_1.pdf"><h3><span class="ru">Обзор: Motorola Razr Fold</span><span class="en">Review: Motorola Razr Fold</span></h3></a>
+    <a class="card" href="/examples/audit.html"><h3><span class="ru">Аудит (пример отчёта)</span><span class="en">Audit (sample report)</span></h3></a>
+    <a class="card" href="/examples/learning_plan_qa_auto.html"><h3><span class="ru">План обучения (авто-QA)</span><span class="en">Learning plan (auto-QA)</span></h3></a>
+    <a class="card" href="/examples/duma-viii-deputies-transition.html"><h3><span class="ru">Аналитика: депутаты Думы VIII</span><span class="en">Analytics: Duma VIII deputies</span></h3></a>
+  </div>
+</main>
+
+<footer class="wrap">
+  <span>© <span id="y"></span> <span class="ru">Гефест · студия</span><span class="en">Hefest · studio</span></span>
+  <span class="ru">сделано в кузнице</span><span class="en">forged in-house</span>
+</footer>
+
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear();
+  const root = document.documentElement;
+  document.querySelectorAll('.lang button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const l=b.dataset.set; root.setAttribute('data-lang',l); root.lang=l;
+      document.querySelectorAll('.lang button').forEach(x=>x.setAttribute('aria-pressed', String(x.dataset.set===l)));
+      try{localStorage.setItem('hefest-lang',l)}catch(e){}
+    });
+  });
+  try{const s=localStorage.getItem('hefest-lang'); if(s==='en'||s==='ru'){document.querySelector('.lang button[data-set="'+s+'"]').click();}}catch(e){}
+</script>
+</body>
+</html>

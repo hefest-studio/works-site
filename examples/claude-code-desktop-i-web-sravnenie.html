@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Claude Code, Claude Desktop и Claude Web: сравнение</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #f2f4f6;
+    --surface: #ffffff;
+    --ink: #172330;
+    --muted: #55636f;
+    --line: #d5dce2;
+    --cli: #3a3f9e;
+    --cli-bg: #e8e9f7;
+    --desk: #0b7a75;
+    --desk-bg: #def2f0;
+    --web: #a8610f;
+    --web-bg: #f7ead8;
+    --code-bg: #e9edf1;
+    --font: "Golos Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10171d; --surface: #18222b; --ink: #e6ecf1; --muted: #9aa8b4; --line: #2a3641;
+      --cli: #a4a9f7; --cli-bg: #23264a; --desk: #52cbc2; --desk-bg: #12302f;
+      --web: #e8a24e; --web-bg: #3a2a14; --code-bg: #212d38;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10171d; --surface: #18222b; --ink: #e6ecf1; --muted: #9aa8b4; --line: #2a3641;
+    --cli: #a4a9f7; --cli-bg: #23264a; --desk: #52cbc2; --desk-bg: #12302f;
+    --web: #e8a24e; --web-bg: #3a2a14; --code-bg: #212d38;
+  }
+  html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font); font-size: 17px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 22px 72px; }
+  a { color: var(--desk); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--cli); outline-offset: 2px; border-radius: 3px; }
+  code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; }
+
+  header.top { padding: 64px 0 36px; }
+  h1 { font-size: clamp(34px, 6vw, 60px); line-height: 1.08; letter-spacing: -0.02em; font-weight: 700; margin: 0 0 20px; max-width: 18ch; }
+  .lead { font-size: clamp(18px, 2.2vw, 21px); color: var(--muted); max-width: 62ch; margin: 0 0 8px; }
+  .stamp { font-size: 14px; color: var(--muted); margin-top: 18px; }
+
+  /* the one memorable element: engine + three surfaces */
+  .map { margin: 28px 0 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+  .engine { padding: 16px 22px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .engine span { display: block; font-weight: 400; color: var(--muted); font-size: 15px; margin-top: 2px; }
+  .surfaces { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .surface { padding: 20px 22px 24px; border-top: 6px solid var(--c); background: var(--cbg); }
+  .surface + .surface { border-left: 1px solid var(--line); }
+  .surface h2 { font-size: 20px; margin: 0 0 4px; color: var(--c); }
+  .surface .where { font-size: 14px; color: var(--muted); margin: 0 0 10px; }
+  .surface p { margin: 0; font-size: 16px; }
+  .s-cli { --c: var(--cli); --cbg: var(--cli-bg); }
+  .s-desk { --c: var(--desk); --cbg: var(--desk-bg); }
+  .s-web { --c: var(--web); --cbg: var(--web-bg); }
+
+  section { margin-top: 64px; }
+  h2.sec { font-size: clamp(26px, 3.4vw, 34px); line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 12px; }
+  h3 { font-size: 20px; margin: 28px 0 8px; }
+  p { margin: 0 0 14px; max-width: 70ch; }
+  ul { padding-left: 20px; margin: 0 0 14px; max-width: 70ch; }
+  li { margin-bottom: 6px; }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 18px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 780px; font-size: 15px; line-height: 1.5; }
+  caption { text-align: left; padding: 14px 16px 6px; font-weight: 600; font-size: 16px; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 16px; border-top: 1px solid var(--line); }
+  thead th { border-top: 0; border-bottom: 3px solid var(--c); color: var(--c); font-size: 15px; background: var(--cbg); }
+  thead th:first-child { background: transparent; border-bottom-color: var(--line); color: var(--muted); }
+  th.c-cli { --c: var(--cli); --cbg: var(--cli-bg); }
+  th.c-desk { --c: var(--desk); --cbg: var(--desk-bg); }
+  th.c-web { --c: var(--web); --cbg: var(--web-bg); }
+  tbody th { font-weight: 600; width: 19%; color: var(--ink); }
+  .no { color: var(--muted); }
+  .tag { display: inline-block; font-size: 13px; font-weight: 600; padding: 0 7px; border-radius: 4px; border: 1px solid currentColor; margin-right: 6px; white-space: nowrap; }
+  .tag.yes { color: var(--desk); }
+  .tag.part { color: var(--web); }
+  .tag.none { color: var(--muted); }
+
+  .detail { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 8px; }
+  .panel { border-left: 4px solid var(--c); padding: 2px 0 2px 18px; }
+  .panel h3 { margin-top: 0; color: var(--c); }
+  .panel.full { grid-column: 1 / -1; }
+
+  dl.choose { margin: 18px 0 0; display: grid; gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  dl.choose > div { display: grid; grid-template-columns: minmax(180px, 34%) 1fr; gap: 18px; padding: 14px 18px; border-top: 1px solid var(--line); }
+  dl.choose > div:first-child { border-top: 0; }
+  dl.choose dt { font-weight: 600; }
+  dl.choose dd { margin: 0; }
+  .pill { font-weight: 600; color: var(--c); }
+  .pill.cli { --c: var(--cli); } .pill.desk { --c: var(--desk); } .pill.web { --c: var(--web); }
+
+  .note { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin-top: 18px; max-width: 78ch; }
+  .note p:last-child { margin-bottom: 0; }
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 15px; color: var(--muted); }
+  footer ul { max-width: none; }
+
+  @media (max-width: 760px) {
+    .surfaces { grid-template-columns: 1fr; }
+    .surface + .surface { border-left: 0; border-top: 1px solid var(--line); }
+    .detail { grid-template-columns: 1fr; }
+    dl.choose > div { grid-template-columns: 1fr; gap: 4px; }
+    header.top { padding-top: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Claude Code, Desktop и Web: чем они отличаются</h1>
+  <p class="lead">Это не три конкурирующих продукта. Claude Code — агент для работы с кодом, а Desktop и Web — места, где его можно запустить рядом с обычным чатом. Ниже — что умеет каждый вариант и когда какой выбрать.</p>
+  <p class="stamp">Сверено с официальной документацией Anthropic на 7 октября 2026. Продукты быстро меняются, поэтому спорные детали стоит проверять по ссылкам в конце.</p>
+
+  <div class="map" role="group" aria-label="Схема: один движок и три поверхности">
+    <div class="engine">Один движок Claude Code
+      <span>У всех поверхностей общий движок, поэтому файлы CLAUDE.md, настройки и MCP-серверы работают везде.</span>
+    </div>
+    <div class="surfaces">
+      <div class="surface s-cli">
+        <h2>Claude Code в терминале</h2>
+        <p class="where">Запускается на вашем компьютере</p>
+        <p>Полнофункциональный CLI: правит файлы, запускает команды, пишет скрипты и работает в CI.</p>
+      </div>
+      <div class="surface s-desk">
+        <h2>Claude Desktop</h2>
+        <p class="where">Приложение для macOS, Windows и Linux (бета)</p>
+        <p>Три вкладки: Chat, Cowork и Code. Вкладка Code — тот же Claude Code, но с окнами, diff и параллельными сессиями.</p>
+      </div>
+      <div class="surface s-web">
+        <h2>Claude Web</h2>
+        <p class="where">claude.ai в браузере и мобильное приложение</p>
+        <p>Обычный чат с Projects и Artifacts. Отдельно на claude.ai/code работает Claude Code в облаке.</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="basics">
+  <h2 class="sec">Общая картина</h2>
+  <p>Слово «Web» в запросе можно понять двояко: как обычный чат на claude.ai или как Claude Code в браузере. Поэтому в таблицах веб-колонка описывает оба случая, и я их разделяю.</p>
+
+  <div class="scroll" tabindex="0" role="region" aria-label="Таблица: общая картина">
+  <table>
+    <caption>Общая картина</caption>
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col" class="c-cli">Claude Code (терминал)</th>
+        <th scope="col" class="c-desk">Claude Desktop</th>
+        <th scope="col" class="c-web">Claude Web</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Что это</th>
+        <td>Агентный инструмент для программирования: читает кодовую базу, редактирует файлы, запускает команды.</td>
+        <td>Отдельное приложение с вкладками Chat, Cowork и Code. Вкладка Code содержит встроенный Claude Code.</td>
+        <td>Чат на claude.ai; плюс claude.ai/code, где Claude Code работает в облачной среде Anthropic.</td>
+      </tr>
+      <tr>
+        <th scope="row">Где выполняется работа</th>
+        <td>На вашей машине.</td>
+        <td>Локально, в облаке, по SSH на удалённой машине или в WSL на Windows. Среду выбирают при старте сессии.</td>
+        <td>Чат — на стороне Anthropic. Claude Code — в облачной виртуальной машине.</td>
+      </tr>
+      <tr>
+        <th scope="row">Доступ к вашим файлам</th>
+        <td>Прямой: рабочая папка становится контекстом, загружать файлы не нужно.</td>
+        <td>В локальных сессиях Code — прямой. В Chat файлы прикрепляются вручную.</td>
+        <td>Чат: файлы нужно загрузить. Claude Code: клонирует репозиторий из GitHub, ваша локальная конфигурация не используется.</td>
+      </tr>
+      <tr>
+        <th scope="row">Установка</th>
+        <td>Одна команда установки (macOS, Linux, WSL, Windows), Homebrew, WinGet, а также apt, dnf и apk. Отдельное приложение не нужно.</td>
+        <td>Скачать и установить приложение. Отдельный CLI для вкладки Code не нужен.</td>
+        <td>Ничего ставить не нужно: достаточно браузера или мобильного приложения.</td>
+      </tr>
+      <tr>
+        <th scope="row">Подписка и доступ</th>
+        <td>Подписка Claude или аккаунт Anthropic Console. Также поддерживаются Amazon Bedrock, Google Cloud Agent Platform и Microsoft Foundry.</td>
+        <td>Вкладка Code требует платной подписки (Pro, Max, Team или Enterprise).</td>
+        <td>Чат есть и на бесплатном тарифе. Облачные сессии Code доступны на Pro, Max, Team и для части мест Enterprise.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="scroll" tabindex="0" role="region" aria-label="Таблица: работа с кодом">
+  <table>
+    <caption>Работа с кодом</caption>
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col" class="c-cli">Терминал (CLI)</th>
+        <th scope="col" class="c-desk">Desktop, вкладка Code</th>
+        <th scope="col" class="c-web">Web, claude.ai/code</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Режимы разрешений</th>
+        <td><span class="tag yes">Все</span>Включая <code>dontAsk</code>, который есть только в CLI.</td>
+        <td>Manual, Accept edits, Plan, Auto. Bypass permissions включается отдельно.</td>
+        <td>Accept edits, Plan, Auto. Manual и Bypass недоступны.</td>
+      </tr>
+      <tr>
+        <th scope="row">Параллельная работа</th>
+        <td>Несколько терминалов, флаг <code>--worktree</code>, субагенты, агентные команды (agent teams).</td>
+        <td>Сессии в боковой панели, git worktree для изоляции, фоновые задачи. Agent teams недоступны.</td>
+        <td>Каждая задача — отдельная сессия и ветка; можно запускать несколько сразу.</td>
+      </tr>
+      <tr>
+        <th scope="row">Просмотр изменений</th>
+        <td>Текстовый вывод в терминале.</td>
+        <td>Визуальный diff с комментариями к строкам, кнопка «Review code», мониторинг PR с авто-исправлением CI.</td>
+        <td>Diff с комментариями к строкам, создание PR одной кнопкой, авто-исправление PR.</td>
+      </tr>
+      <tr>
+        <th scope="row">Скрипты и автоматизация</th>
+        <td><span class="tag yes">Да</span><code>claude -p</code>, конвейеры, CI, GitHub Actions, GitLab CI/CD, Agent SDK.</td>
+        <td><span class="tag none">Нет</span>Только интерактивная работа; <code>--print</code> недоступен.</td>
+        <td><span class="tag part">Частично</span>Рутины (routines) и запуск по расписанию; ссылки с предзаполненным запросом.</td>
+      </tr>
+      <tr>
+        <th scope="row">Окна и инструменты</th>
+        <td class="no">Только терминал.</td>
+        <td>Окна можно расставлять как угодно: встроенный терминал (локально), редактор файлов, браузер для предпросмотра приложения, симулятор iOS на macOS.</td>
+        <td class="no">Веб-интерфейс сессии с diff.</td>
+      </tr>
+      <tr>
+        <th scope="row">Управление компьютером</th>
+        <td>Через computer use, включается командой <code>/mcp</code> (macOS).</td>
+        <td>Claude может открывать приложения и управлять экраном. Исследовательский предпросмотр, macOS и Windows, только тарифы Pro и Max.</td>
+        <td class="no"><span class="tag none">Нет</span></td>
+      </tr>
+      <tr>
+        <th scope="row">Работа без вас</th>
+        <td>Пока открыта сессия на машине; Remote Control позволяет вести её с телефона.</td>
+        <td>Локальные — пока приложение работает; облачные сессии продолжаются, даже если закрыть приложение. Есть Dispatch с телефона (Pro и Max).</td>
+        <td><span class="tag yes">Да</span>Сессия идёт, даже если закрыть вкладку. Результаты можно проверить с телефона.</td>
+      </tr>
+      <tr>
+        <th scope="row">Что нужно</th>
+        <td>Терминал и проект на диске.</td>
+        <td>Платная подписка. Для мониторинга PR нужен GitHub CLI.</td>
+        <td>Аккаунт GitHub (или локальный репозиторий, отправленный через <code>--cloud</code>). Недоступно для организаций с Zero Data Retention или HIPAA-конфигурацией.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="scroll" tabindex="0" role="region" aria-label="Таблица: чат и повседневные задачи">
+  <table>
+    <caption>Чат и повседневные задачи</caption>
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col" class="c-cli">Терминал (CLI)</th>
+        <th scope="col" class="c-desk">Desktop, вкладка Chat</th>
+        <th scope="col" class="c-web">Web, claude.ai</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Назначение</th>
+        <td>Изменять файлы и запускать команды. Для общих вопросов лучше подходит чат.</td>
+        <td>Обычные разговоры; рядом вкладка Cowork для длительных агентных задач.</td>
+        <td>Разговоры, анализ, письмо, исследования, документы.</td>
+      </tr>
+      <tr>
+        <th scope="row">Projects и Artifacts</th>
+        <td class="no"><span class="tag none">Нет</span>Контекст задаёт файловая структура проекта и CLAUDE.md.</td>
+        <td colspan="2">Справочный центр описывает Projects (общие знания и инструкции для нескольких чатов) и Artifacts (панель с кодом, документами и интерактивными приложениями) для чата на claude.ai.</td>
+      </tr>
+      <tr>
+        <th scope="row">Поиск и исследования</th>
+        <td>Может искать информацию в сети в рамках задачи.</td>
+        <td colspan="2">Веб-поиск, расширенное мышление и режим Research (многошаговое исследование с источниками).</td>
+      </tr>
+      <tr>
+        <th scope="row">Файлы</th>
+        <td>Работает с файлами проекта напрямую.</td>
+        <td colspan="2">Загрузка файлов и создание или редактирование документов прямо в чате.</td>
+      </tr>
+      <tr>
+        <th scope="row">Подключение сервисов</th>
+        <td>MCP-серверы через файлы настроек.</td>
+        <td>Коннекторы и локальные MCP-серверы из <code>claude_desktop_config.json</code>.</td>
+        <td>Готовые веб-коннекторы и собственные, на основе удалённых MCP-серверов.</td>
+      </tr>
+      <tr>
+        <th scope="row">Навыки и память</th>
+        <td>Skills, hooks, CLAUDE.md и автоматическая память о проекте.</td>
+        <td colspan="2">Skills, память между чатами и поиск по прошлым разговорам (см. справочный центр).</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="details">
+  <h2 class="sec">Подробнее о каждом варианте</h2>
+  <div class="detail">
+    <div class="panel s-cli" style="--c: var(--cli)">
+      <h3>Claude Code в терминале</h3>
+      <p>Самый гибкий вариант и «оригинал» для всех остальных поверхностей.</p>
+      <ul>
+        <li>Работает в вашей среде: правит файлы, запускает команды, делает коммиты и открывает pull request.</li>
+        <li>Комбинируется с другими утилитами: можно передать ему вывод лога и получить разбор, или запустить в CI.</li>
+        <li>Настраивается через <code>CLAUDE.md</code>, skills, hooks и MCP-серверы.</li>
+        <li>Единственная поверхность со сценарным запуском (<code>claude -p</code>) и командами агентов.</li>
+        <li>Подходит тем, кто привык к терминалу и хочет полный контроль.</li>
+      </ul>
+    </div>
+
+    <div class="panel s-desk" style="--c: var(--desk)">
+      <h3>Claude Desktop</h3>
+      <p>Тот же Claude Code, но в графической оболочке, плюс обычный чат и Cowork.</p>
+      <ul>
+        <li>Вкладка Code делит с CLI настройки, CLAUDE.md, hooks и skills. Сессию можно перенести командой <code>/desktop</code>.</li>
+        <li>Удобнее вести несколько задач: сессии лежат в боковой панели, у каждой свой git worktree.</li>
+        <li>Встроенный предпросмотр: Claude запускает приложение и сам проверяет свои правки через скриншоты.</li>
+        <li>Подключения без файлов настроек: коннекторы и плагины ставятся из интерфейса.</li>
+        <li>Чего нет: автодополнения кода, <code>--print</code> и agent teams.</li>
+      </ul>
+    </div>
+
+    <div class="panel s-web" style="--c: var(--web)">
+      <h3>Claude Web: чат на claude.ai</h3>
+      <p>Универсальный вариант для людей и задач, не связанных с локальным проектом.</p>
+      <ul>
+        <li>Работает без установки, синхронизируется с мобильным приложением.</li>
+        <li>Projects собирают файлы и инструкции в рабочее пространство; Artifacts превращают результат в документ, страницу или приложение.</li>
+        <li>Подходит для вопросов, текстов, анализа данных и исследований.</li>
+        <li>Не имеет автоматического доступа к вашей файловой системе: всё нужно загружать.</li>
+      </ul>
+    </div>
+
+    <div class="panel s-web" style="--c: var(--web)">
+      <h3>Claude Web: Claude Code в облаке</h3>
+      <p>Подходит для задач, которые можно поставить и не следить за ними.</p>
+      <ul>
+        <li>Claude клонирует репозиторий в изолированную виртуальную машину, вносит изменения и пушит ветку.</li>
+        <li>Удобно для параллельных задач, чужих репозиториев и вопросов по коду без локальной копии.</li>
+        <li>Работает и с телефона; сессию можно «телепортировать» в терминал.</li>
+        <li>Если нужны ваши локальные инструменты и окружение, лучше запускать локально или с Remote Control.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="choose">
+  <h2 class="sec">Что выбрать</h2>
+  <dl class="choose">
+    <div>
+      <dt><span class="pill cli">Терминал</span></dt>
+      <dd>Нужны скрипты, CI, конвейеры или команды агентов; вы привыкли работать в терминале; Claude нужен на сервере или в SSH-сессии без графики.</dd>
+    </div>
+    <div>
+      <dt><span class="pill desk">Desktop</span></dt>
+      <dd>Ведёте несколько задач одновременно, хотите видеть diff и предпросмотр приложения, используете чат и Code в одной программе или хотите, чтобы Claude управлял приложениями на экране.</dd>
+    </div>
+    <div>
+      <dt><span class="pill web">Web: Claude Code</span></dt>
+      <dd>Задача чётко сформулирована и не требует частых уточнений, нужно параллельно запустить несколько изменений или репозитория нет на вашей машине.</dd>
+    </div>
+    <div>
+      <dt><span class="pill web">Web: чат</span></dt>
+      <dd>Нужны ответы на вопросы, тексты, анализ, исследование с источниками, документы или приложения в Artifacts, а проект на диске не задействован.</dd>
+    </div>
+  </dl>
+
+  <div class="note">
+    <p><strong>Можно сочетать.</strong> Сессию из терминала переносят в Desktop командой <code>/desktop</code>, а из облака забирают в терминал через <code>claude --teleport</code>. Удобная схема: ставите длинную задачу в облаке с телефона, а проверяете и дорабатываете её локально.</p>
+  </div>
+</section>
+
+<section id="caveats">
+  <h2 class="sec">Оговорки</h2>
+  <ul>
+    <li>Требования к тарифам и список функций меняются. Для расчёта стоимости и лимитов сверяйтесь со страницей тарифов Claude.</li>
+    <li>Раздел про чат собран по оглавлению официального справочного центра. Детали отдельных функций и лимиты зависят от тарифа и настроек организации.</li>
+    <li>Часть возможностей Desktop (computer use, Dispatch) ограничена тарифами Pro и Max и недоступна на Team и Enterprise.</li>
+    <li>В корпоративных аккаунтах администратор может отключить облачные сессии, режим Bypass permissions и другие функции.</li>
+  </ul>
+</section>
+</main>
+
+<footer>
+  <p>Источники (официальные):</p>
+  <ul>
+    <li><a href="https://code.claude.com/docs/zh-CN/overview">Claude Code: обзор</a></li>
+    <li><a href="https://code.claude.com/docs/en/desktop">Claude Code в приложении Desktop</a></li>
+    <li><a href="https://code.claude.com/docs/en/web-quickstart">Claude Code в облаке: быстрый старт</a></li>
+    <li><a href="https://support.claude.com/en/collections/18031719-features-and-capabilities">Справочный центр Claude: функции и возможности</a></li>
+  </ul>
+</footer>
+</div>
+</body>
+</html>

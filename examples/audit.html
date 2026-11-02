@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go pkg Audit Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.3);
+            --success: #3fb950;
+            --warning: #d29922;
+            --danger: #f85149;
+            --purple: #a371f7;
+            --cyan: #39c5cf;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(88, 166, 255, 0.15), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(163, 113, 247, 0.1), transparent),
+                radial-gradient(ellipse 50% 30% at 0% 0%, rgba(57, 197, 207, 0.08), transparent);
+            z-index: -1;
+            animation: bgShift 20s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.05) rotate(1deg); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 2rem 0 3rem;
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--purple), var(--cyan));
+            border-radius: 2px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 50%, var(--purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .meta span:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px var(--accent-glow);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card:nth-child(1) .stat-icon { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .stat-card:nth-child(2) .stat-icon { background: rgba(63, 185, 80, 0.2); color: var(--success); }
+        .stat-card:nth-child(3) .stat-icon { background: rgba(210, 153, 34, 0.2); color: var(--warning); }
+        .stat-card:nth-child(4) .stat-icon { background: rgba(163, 113, 247, 0.2); color: var(--purple); }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1000px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .chart-card:hover {
+            border-color: var(--border);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+
+        /* Top Files Table */
+        .table-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            background: linear-gradient(135deg, var(--purple), var(--accent));
+        }
+
+        .table-wrapper {
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rank {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent);
+            width: 50px;
+        }
+
+        .rank.top-1 { color: #ffd700; }
+        .rank.top-2 { color: #c0c0c0; }
+        .rank.top-3 { color: #cd7f32; }
+
+        .file-path {
+            font-family: 'SF Mono', 'Fira Code', 'Monaco', monospace;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            word-break: break-all;
+            max-width: 500px;
+        }
+
+        .file-size {
+            font-weight: 600;
+            font-size: 1rem;
+            font-family: 'SF Mono', monospace;
+            color: var(--warning);
+            white-space: nowrap;
+        }
+
+        .file-type {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* File Types Table */
+        .types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .type-card {
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .type-card:hover {
+            border-color: var(--accent);
+            transform: translateX(4px);
+        }
+
+        .type-ext {
+            font-family: 'SF Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 80px;
+        }
+
+        .type-info {
+            flex: 1;
+        }
+
+        .type-name {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .type-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .type-bar {
+            width: 80px;
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .type-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+            transition: width 1s ease-out;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .delay-5 { animation-delay: 0.5s; opacity: 0; }
+        .delay-6 { animation-delay: 0.6s; opacity: 0; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Go pkg Audit Dashboard</h1>
+            <p class="subtitle">Анализ хранилища модулей Go: /Users/sergio/go/pkg</p>
+            <div class="meta">
+                <span>📁 67,875 файлов</span>
+                <span>💾 2.1 GB всего</span>
+                <span>📦 666 MB кэш модулей</span>
+                <span>🕐 Сгенерировано: 26.09.2026</span>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card animate-in delay-1">
+                <div class="stat-icon">📄</div>
+                <div class="stat-value">67,875</div>
+                <div class="stat-label">Всего файлов</div>
+            </div>
+            <div class="stat-card animate-in delay-2">
+                <div class="stat-icon">💾</div>
+                <div class="stat-value">2.1 GB</div>
+                <div class="stat-label">Общий размер</div>
+            </div>
+            <div class="stat-card animate-in delay-3">
+                <div class="stat-icon">📦</div>
+                <div class="stat-value">666 MB</div>
+                <div class="stat-label">Кэш модулей</div>
+            </div>
+            <div class="stat-card animate-in delay-4">
+                <div class="stat-icon">🔧</div>
+                <div class="stat-value">42,002</div>
+                <div class="stat-label">Go исходников (.go)</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-section">
+            <div class="chart-card animate-in delay-3">
+                <div class="chart-header">
+                    <h2 class="chart-title">Распределение типов файлов (Топ-12)</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="fileTypesChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card animate-in delay-4">
+                <div class="chart-header">
+                    <h2 class="chart-title">Топ-10 крупнейших файлов</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="largestFilesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Files Table -->
+        <section class="table-section animate-in delay-5">
+            <div class="section-header">
+                <h2 class="section-title">Детальный список крупнейших файлов</h2>
+            </div>
+            <div class="table-wrapper">
+                <table id="filesTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Размер</th>
+                            <th>Тип</th>
+                            <th>Путь к файлу</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- File Types Breakdown -->
+        <section class="table-section animate-in delay-6">
+            <div class="section-header">
+                <h2 class="section-title">Все типы файлов (Топ-20)</h2>
+            </div>
+            <div class="types-grid" id="typesGrid"></div>
+        </section>
+
+        <footer>
+            <p>Сгенерировано автоматически • <code>go clean -modcache</code> для очистки кэша</p>
+        </footer>
+    </div>
+
+    <script>
+        // Data from audit
+        const fileTypesData = {
+            labels: ['.go', '.mod', '.md', '.info', '.txt', '.json', '.yml', '.zip', '.golden', '.s', '.toml', '.lock'],
+            counts: [42002, 2851, 2047, 1662, 1452, 1029, 969, 852, 804, 656, 575, 384],
+            colors: [
+                'rgba(88, 166, 255, 0.8)',
+                'rgba(163, 113, 247, 0.8)',
+                'rgba(57, 197, 207, 0.8)',
+                'rgba(210, 153, 34, 0.8)',
+                'rgba(63, 185, 80, 0.8)',
+                'rgba(248, 81, 73, 0.8)',
+                'rgba(88, 166, 255, 0.7)',
+                'rgba(163, 113, 247, 0.7)',
+                'rgba(57, 197, 207, 0.7)',
+                'rgba(210, 153, 34, 0.7)',
+                'rgba(63, 185, 80, 0.7)',
+                'rgba(248, 81, 73, 0.7)'
+            ]
+        };
+
+        const largestFilesData = {
+            labels: [
+                'goca v1.27.0.zip',
+                'compress v1.18.5.zip',
+                'compress v1.18.4.zip',
+                'compress v1.18.0.zip',
+                'compress v1.17.9.zip',
+                'compress v1.17.6.zip',
+                'compress v1.17.0.zip',
+                'compress v1.16.7.zip',
+                'mimetype v1.4.3.zip',
+                'mimetype v1.4.2.zip'
+            ],
+            sizes: [79, 37, 37, 37, 37, 37, 36, 36, 24, 24], // in MB
+            fullPaths: [
+                'mod/cache/download/github.com/sazardev/goca/@v/v1.27.0.zip',
+                'mod/cache/download/github.com/klauspost/compress/@v/v1.18.5.zip',
+                'mod/cache/download/github.com/klauspost/compress/@v/v1.18.4.zip',
+                'mod/cache/download/github.com/klauspost/compress/@v/v1.18.0.zip',
+                'mod/cache/download/github.com/klauspost/compress/@v/v1.17.9.zip',
+                'mod/cache/download/github.com/klauspost/compress/@v/v1.17.6.zip',
+                'mod/cache/download/github.com/klauspost/compress/@v/v1.17.0.zip',
+                'mod/cache/download/github.com/klauspost/compress/@v/v1.16.7.zip',
+                'mod/cache/download/github.com/gabriel-vasile/mimetype/@v/v1.4.3.zip',
+                'mod/cache/download/github.com/gabriel-vasile/mimetype/@v/v1.4.2.zip'
+            ]
+        };
+
+        const allFileTypes = [
+            { ext: '.go', count: 42002, name: 'Go source files' },
+            { ext: '.mod', count: 2851, name: 'Go module files' },
+            { ext: '.md', count: 2047, name: 'Markdown docs' },
+            { ext: '.info', count: 1662, name: 'Module info files' },
+            { ext: '.txt', count: 1452, name: 'Text files' },
+            { ext: '.json', count: 1029, name: 'JSON configs' },
+            { ext: '.yml', count: 969, name: 'YAML configs' },
+            { ext: '.zip', count: 852, name: 'Module archives' },
+            { ext: '.golden', count: 804, name: 'Test golden files' },
+            { ext: '.s', count: 656, name: 'Assembly sources' },
+            { ext: '.toml', count: 575, name: 'TOML configs' },
+            { ext: '.0', count: 446, name: 'Versioned files' },
+            { ext: '.lock', count: 384, name: 'Lock files' },
+            { ext: '.ziphash', count: 372, name: 'Archive hashes' },
+            { ext: '.dat', count: 372, name: 'Data files' },
+            { ext: '.txtar', count: 361, name: 'Text archives' },
+            { ext: '.png', count: 334, name: 'PNG images' },
+            { ext: '.gitignore', count: 331, name: 'Git ignore files' },
+            { ext: '.yaml', count: 299, name: 'YAML files' },
+            { ext: '.sum', count: 289, name: 'Checksum files' }
+        ];
+
+        // Chart.js default config
+        Chart.defaults.color = '#8b949e';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif';
+        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+        Chart.defaults.plugins.legend.labels.padding = 20;
+
+        // File Types Doughnut Chart
+        new Chart(document.getElementById('fileTypesChart'), {
+            type: 'doughnut',
+            data: {
+                labels: fileTypesData.labels,
+                datasets: [{
+                    data: fileTypesData.counts,
+                    backgroundColor: fileTypesData.colors,
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { size: 11 },
+                            color: '#8b949e'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#161b22',
+                        titleColor: '#e6edf3',
+                        bodyColor: '#8b949e',
+                        borderColor: '#30363d',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = ((context.raw / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.raw.toLocaleString()} (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // Largest Files Horizontal Bar Chart
+        new Chart(document.getElementById('largestFilesChart'), {
+            type: 'bar',
+            data: {
+                labels: largestFilesData.labels,
+                datasets: [{
+                    label: 'Размер (MB)',
+                    data: largestFilesData.sizes,
+                    backgroundColor: largestFilesData.sizes.map((s, i) => {
+                        if (i === 0) return 'rgba(255, 215, 0, 0.8)';
+                        if (i < 3) return 'rgba(192, 192, 192, 0.8)';
+                        if (i < 5) return 'rgba(205, 127, 50, 0.8)';
+                        return 'rgba(88, 166, 255, 0.8)';
+                    }),
+                    borderWidth: 0,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#161b22',
+                        titleColor: '#e6edf3',
+                        bodyColor: '#8b949e',
+                        borderColor: '#30363d',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return `Размер: ${context.raw} MB`;
+                            },
+                            afterLabel: function(context) {
+                                return `Путь: ${largestFilesData.fullPaths[context.dataIndex]}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#21262d' },
+                        ticks: { color: '#8b949e', font: { size: 11 } },
+                        title: { display: true, text: 'Размер (MB)', color: '#8b949e', font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { color: '#8b949e', font: { size: 10 } }
+                    }
+                },
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // Populate files table
+        const tbody = document.querySelector('#filesTable tbody');
+        largestFilesData.sizes.forEach((size, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="rank ${i < 3 ? `top-${i + 1}` : ''}">${i + 1}</td>
+                <td class="file-size">${size} MB</td>
+                <td><span class="file-type">ZIP</span></td>
+                <td><code class="file-path">${largestFilesData.fullPaths[i]}</code></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Populate types grid
+        const typesGrid = document.getElementById('typesGrid');
+        const maxCount = allFileTypes[0].count;
+        allFileTypes.forEach((type, i) => {
+            const pct = (type.count / maxCount * 100).toFixed(1);
+            const card = document.createElement('div');
+            card.className = 'type-card';
+            card.style.animationDelay = `${0.1 * (i + 1)}s`;
+            card.style.opacity = '0';
+            card.style.animation = 'fadeInUp 0.5s ease-out forwards';
+            card.innerHTML = `
+                <span class="type-ext">${type.ext}</span>
+                <div class="type-info">
+                    <div class="type-name">${type.name}</div>
+                    <div class="type-count">${type.count.toLocaleString()}</div>
+                </div>
+                <div class="type-bar">
+                    <div class="type-bar-fill" style="width: ${pct}%"></div>
+                </div>
+            `;
+            typesGrid.appendChild(card);
+        });
+
+        // Add scroll reveal animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.animate-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
