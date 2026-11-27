@@ -9,10 +9,11 @@ Status: ✅ done · 🚧 in progress · 🗓 planned · ❌ not planned
 - ✅ One-page portfolio at <https://works.hefest.ru>: cards of the studio's works and an "Examples" section
 - ✅ Curated public examples in `examples/`
 - ✅ Static site on Vercel with two domains
+- ✅ Russian and English on one page: `works.hefest.online` opens in English, a RU / EN switch and `?lang=`
 
-## Next
+## Known limits
 
-- 🗓 English version for `works.hefest.online` — the domain currently serves the Russian page
+- The example pages themselves are in Russian.
 
 ## Not planned
 

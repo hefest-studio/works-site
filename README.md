@@ -9,9 +9,9 @@
 
 # works-site — the Hefest studio portfolio
 
-A public one-page portfolio: `works.hefest.ru` and `works.hefest.online` (both domains serve the same
-Russian page for now; an English version is on the [roadmap](ROADMAP.md)). Static files, deployed to
-Vercel (automatic HTTPS). A work of the Hefest studio.
+A public one-page portfolio in Russian and English: `works.hefest.ru` opens in Russian, `works.hefest.online`
+in English; the RU / EN switch on the page and `?lang=ru|en` override that, and the choice is remembered.
+Static files, deployed to Vercel (automatic HTTPS). A work of the Hefest studio. What is next — [roadmap](ROADMAP.md).
 
 ## Contents
 - `index.html` — the showcase: cards of the studio's works (Polyinstrumental Workshop, Retro Games, Tab Forge) and an "Examples" section.
