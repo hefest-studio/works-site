@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/cover.png" alt="works-site" width="100%"></p>
+
 # works-site — витрина работ студии «Гефест»
 
 Публичный одностраничник-портфолио: `works.hefest.ru` (рус) / `works.hefest.online` (eng).
